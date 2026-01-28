@@ -1,0 +1,171 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../Controller/adminController.dart';
+import '../../constence/MyColor.dart';
+
+class CreateGovAdminScreen extends StatelessWidget {
+  const CreateGovAdminScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.put(AdminController());
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Get.back();
+          },
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+        ),
+        title: const Text(
+          "إضافة مشرف محافظة",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: MyColor.primaryBlue,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            // هيدر موحد
+            _buildModernHeader(),
+            const SizedBox(height: 30),
+
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
+              child: Form(
+                key: controller.formKey,
+                child: Column(
+                  children: [
+                    _input(
+                      controller.nameController,
+                      "اسم المشرف",
+                      Icons.person_add_alt,
+                    ),
+                    const SizedBox(height: 15),
+                    _input(
+                      controller.phoneController,
+                      "رقم الهاتف",
+                      Icons.phone,
+                    ),
+                    const SizedBox(height: 15),
+                    _input(
+                      controller.passwordController,
+                      "كلمة السر",
+                      Icons.lock,
+                      isPass: true,
+                    ),
+                    const SizedBox(height: 15),
+                    Obx(
+                      () => _dropdown(
+                        "اختر المحافظة",
+                        controller.locations.keys.toList(),
+                        controller.selectedGovernorate.value,
+                        (v) => controller.updateGovernorate(v),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    _submitBtn("إعتماد المشرف", controller.saveAdmin),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: CircleAvatar(
+        radius: 50,
+        backgroundColor: MyColor.primaryBlue.withOpacity(0.1),
+        backgroundImage: const AssetImage(
+          'image/photo_2026-01-12_10-03-16.jpg',
+        ),
+      ),
+    );
+  }
+
+  // (ويدجت مساعدة الإدخال هي نفسها السابقة لضمان التناسق)
+  Widget _input(
+    TextEditingController ctr,
+    String label,
+    IconData icon, {
+    bool isPass = false,
+  }) {
+    return TextFormField(
+      controller: ctr,
+      obscureText: isPass,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: MyColor.primaryBlue),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey[200]!),
+        ),
+      ),
+    );
+  }
+
+  Widget _dropdown(
+    String label,
+    List<String> items,
+    String? val,
+    Function(String?) onChange,
+  ) {
+    return DropdownButtonFormField<String>(
+      value: val,
+      hint: Text(label),
+      items: items
+          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+          .toList(),
+      onChanged: onChange,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+      ),
+    );
+  }
+
+  Widget _submitBtn(String txt, VoidCallback tap) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: MyColor.primaryBlue,
+        minimumSize: const Size(double.infinity, 55),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      ),
+      onPressed: tap,
+      child: Text(
+        txt,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
