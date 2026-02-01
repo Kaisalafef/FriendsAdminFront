@@ -37,6 +37,9 @@ dependencies:
   get: ^4.7.3
   lottie: ^2.4.0
   google_maps_flutter: ^2.6.0
+  dio: ^5.9.1
+  shared_preferences: ^2.2.3
+  image_picker: ^1.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

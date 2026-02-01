@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:friends_admin/View/pages/AddAdPage.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 
 import 'View/pages/HomeScreen.dart';
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       locale: const Locale('ar'),
       debugShowCheckedModeBanner: false,
-      home:HomeScreen(),
+      home:AddAdPage(),
     );
   }
 }
