@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:friends_admin/Controller/LogoutController.dart';
 import 'package:get/get.dart';
 import '../../Controller/SettingsController.dart';
 import '../../constence/MyColor.dart';
@@ -12,6 +13,7 @@ class SettingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(SettingsController());
+    final logoutController = Get.put(LogoutController());
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -65,11 +67,29 @@ class SettingScreen extends StatelessWidget {
             const SizedBox(height: 40),
 
             ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.logout, color: Colors.white),
-              label: const Text("تسجيل الخروج", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(backgroundColor: MyColor.primaryBlue, minimumSize: const Size(double.infinity, 55), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-            ),
+  onPressed: () {
+    // إظهار حوار تأكيد قبل تسجيل الخروج
+    Get.defaultDialog(
+      title: "تسجيل الخروج",
+      middleText: "هل أنت متأكد أنك تريد الخروج من التطبيق؟",
+      textConfirm: "نعم",
+      textCancel: "إلغاء",
+      confirmTextColor: Colors.white,
+      buttonColor: MyColor.primaryBlue,
+      onConfirm: () {
+        Get.back(); // إغلاق الديالوج
+        logoutController.logout(); // استدعاء دالة الخروج
+      },
+    );
+  },
+  icon: const Icon(Icons.logout, color: Colors.white),
+  label: const Text("تسجيل الخروج", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: MyColor.primaryBlue, 
+    minimumSize: const Size(double.infinity, 55), 
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+  ),
+),
           ],
         ),
       ),
