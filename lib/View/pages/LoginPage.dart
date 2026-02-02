@@ -79,9 +79,13 @@ class LoginPage extends StatelessWidget {
                         isPass: true,
                       ),
                       const SizedBox(height: 40),
-                      _buildMainButton("تسجيل الدخول", () {
-                        if (_formKey.currentState!.validate()) Get.offAll(const HomeScreen());
-                      }),
+                      GetBuilder<LoginController>(
+  builder: (controller) => controller.isLoading 
+    ? CircularProgressIndicator() 
+    : _buildMainButton("تسجيل الدخول", () {
+        controller.login();
+      }),
+),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
