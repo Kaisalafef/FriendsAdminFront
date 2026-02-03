@@ -1,32 +1,37 @@
-import 'package:flutter/cupertino.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:friends_admin/core/api/dio_client.dart'; 
+import 'package:friends_admin/core/services/token_service.dart';
+import 'package:friends_admin/View/pages/HomeScreen.dart';
 
 class LoginController extends GetxController {
   final passwordController = TextEditingController();
-  final phoneController = TextEditingController();
-  bool isPasswordVisible = false;
-  String? passwordErrorText;
+  final phoneController = TextEditingController(); // سنرسله كـ email للسيرفر
+  
+  final DioClient _dioClient = DioClient();
+  final TokenService _tokenService = TokenService();
+  bool isLoading = false;
 
-  void togglePasswordVisibility() {
-    isPasswordVisible = !isPasswordVisible;
+  Future<void> login() async {
+    isLoading = true;
     update();
-  }
 
-  void clearPasswordError() {
-    passwordErrorText = null;
-    update();
-  }
+    try {
+      final response = await _dioClient.post('/login', data: {
+        'email': phoneController.text, // التعديل هنا ليتوافق مع AuthController.php
+        'password': passwordController.text,
+      });
 
-  void validatePassword() {
-    final password = passwordController.text;
-
-    if (password.isEmpty) {
-      passwordErrorText = 'يرجى إدخال كلمة السر';
-    } else if (password.length < 8) {
-      passwordErrorText = 'يجب أن تكون كلمة السر على الاقل 8 محارف';
-    } else {
-      passwordErrorText = null;
+      if (response.statusCode == 200) {
+        String token = response.data['token'];
+        await _tokenService.saveToken(token); 
+        Get.offAll(() => const HomeScreen());
+      }
+    } catch (e) {
+      Get.snackbar("خطأ", "فشل تسجيل الدخول، تأكد من البيانات");
+    } finally {
+      isLoading = false;
+      update();
     }
-    update();
   }
 }

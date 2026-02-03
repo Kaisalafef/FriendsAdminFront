@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.9.10'
+    ext.kotlin_version = '2.1.0'
     repositories {
         google()
         mavenCentral()
@@ -28,4 +28,26 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
+}
+subprojects {
+    project.configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            // إجبار مكتبات androidx.core على إصدار مستقر
+            if (details.requested.group == 'androidx.core') {
+                details.useVersion "1.13.1"
+            }
+            // إجبار مكتبة activity على إصدار لا يتطلب compileSdk 36
+            if (details.requested.group == 'androidx.activity') {
+                details.useVersion "1.9.3"
+            }
+            // إجبار مكتبة fragment على إصدار متوافق
+            if (details.requested.group == 'androidx.fragment') {
+                details.useVersion "1.8.5"
+            }
+            // حل مشكلة core-viewtree التي ظهرت سابقاً
+            if (details.requested.name == 'core-viewtree') {
+                details.useVersion "1.0.0-rc01"
+            }
+        }
+    }
 }

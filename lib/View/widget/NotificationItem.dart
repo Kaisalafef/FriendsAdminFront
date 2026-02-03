@@ -18,6 +18,7 @@ Widget NotificationItem(BuildContext context, String name, String desc, String l
       );
     },
     child: Container(
+      height: 150,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
