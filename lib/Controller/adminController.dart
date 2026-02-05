@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:friends_admin/core/api/dio_client.dart'; // تأكد من المسار
 
 class AdminController extends GetxController {
+  final DioClient _dioClient = DioClient();
   final formKey = GlobalKey<FormState>();
 
-  // الحقول النصية
+  // الحقول
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
+
+  // المتغيرات
+  var isLoading = false.obs;
+  var employeesList = <dynamic>[].obs; // القائمة القادمة من السيرفر
 
   // خارطة المواقع
   final Map<String, List<String>> locations = {
@@ -31,17 +37,13 @@ class AdminController extends GetxController {
     "دهوك": ["دهوك", "زاخو", "العمادية", "سيميل", "عقرة"]
   };
 
-  // القيم المختارة
   var selectedGovernorate = Rxn<String>();
   var selectedCity = Rxn<String>();
-
-  // قائمة المدن المتاحة
   var availableCities = <String>[].obs;
 
-  // تحديث المحافظة وتصفية المدن
   void updateGovernorate(String? gov) {
     selectedGovernorate.value = gov;
-    selectedCity.value = null; // تصفير المدينة عند تغيير المحافظة
+    selectedCity.value = null;
     if (gov != null) {
       availableCities.value = locations[gov] ?? [];
     } else {
@@ -49,59 +51,90 @@ class AdminController extends GetxController {
     }
   }
 
-  // دالة حفظ أدمن المحافظة (يستخدمها السوبر أدمن)
-  void createGovernorateAdmin() {
-    if (formKey.currentState!.validate()) {
-      Get.snackbar(
-        "تمت العملية",
-        "جاري إنشاء أدمن محافظة لـ: ${selectedGovernorate.value}",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.indigo,
-        colorText: Colors.white,
-      );
-      // هنا تضع كود الربط مع الباك إند
+  // --- العمليات (API) ---
+
+  // دالة مساعدة للإرسال
+  Future<void> _submitAdmin({required String role}) async {
+    if (!formKey.currentState!.validate()) return;
+
+    if (selectedGovernorate.value == null) {
+      Get.snackbar("خطأ", "يرجى اختيار المحافظة");
+      return;
+    }
+    if (role == 'city_admin' && selectedCity.value == null) {
+      Get.snackbar("خطأ", "يرجى اختيار المدينة");
+      return;
+    }
+
+    isLoading.value = true;
+    try {
+      final response = await _dioClient.post('/create-admin', data: {
+        'name': nameController.text,
+        'phone': phoneController.text,
+        'password': passwordController.text,
+        'governorate': selectedGovernorate.value,
+        'city': selectedCity.value,
+        'role': role,
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Get.snackbar("نجاح", "تمت الإضافة بنجاح", backgroundColor: Colors.green, colorText: Colors.white);
+        _clearFields();
+        Get.back();
+      }
+    } catch (e) {
+      print("Create Admin Error: $e");
+      Get.snackbar("خطأ", "فشل إضافة المشرف، ربما الهاتف مكرر", backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  // دالة حفظ أدمن المدينة (يستخدمها أدمن المحافظة)
-  void createCityAdmin() {
-    if (formKey.currentState!.validate()) {
-      Get.snackbar(
-        "تمت العملية",
-        "جاري إنشاء أدمن مدينة لـ: ${selectedCity.value} في ${selectedGovernorate.value}",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.teal,
-        colorText: Colors.white,
-      );
-      // هنا تضع كود الربط مع الباك إند
+  // 1. حفظ أدمن المحافظة
+  void saveGovernorateAdmin() {
+    _submitAdmin(role: 'admin');
+  }
+
+  // 2. حفظ أدمن المدينة
+  void saveCityAdmin() {
+    _submitAdmin(role: 'city_admin');
+  }
+
+  // 3. جلب موظفي المدن (لأدمن المحافظة)
+  void fetchCityEmployees() async {
+    isLoading.value = true;
+    try {
+      final response = await _dioClient.get('/city-admins');
+      if (response.statusCode == 200) {
+        employeesList.value = response.data;
+      }
+    } catch (e) {
+      print("Fetch City Admins Error: $e");
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  @override
-  void onClose() {
-    nameController.dispose();
-    phoneController.dispose();
-    passwordController.dispose();
-    super.onClose();
-  }
-  // داخل كلاس AdminController
-  void saveAdmin() {
-    if (formKey.currentState!.validate()) {
-      // هنا تضع منطق حفظ البيانات أو إرسالها للسيرفر
-      print("تم حفظ بيانات المشرف: ${nameController.text}");
-
-      // إظهار رسالة نجاح
-      Get.snackbar(
-        "تم بنجاح",
-        "تم اعتماد المشرف الجديد",
-        snackPosition: SnackPosition.TOP,
-        colorText: Colors.black,
-      );
-
-      // إفراغ الحقول بعد الحفظ (اختياري)
-      nameController.clear();
-      phoneController.clear();
-      passwordController.clear();
+  // 4. جلب جميع المشرفين (للسوبر أدمن)
+  void fetchAllEmployees() async {
+    isLoading.value = true;
+    try {
+      final response = await _dioClient.get('/all-admins');
+      if (response.statusCode == 200) {
+        employeesList.value = response.data;
+      }
+    } catch (e) {
+      print("Fetch All Admins Error: $e");
+    } finally {
+      isLoading.value = false;
     }
+  }
+
+  void _clearFields() {
+    nameController.clear();
+    phoneController.clear();
+    passwordController.clear();
+    selectedGovernorate.value = null;
+    selectedCity.value = null;
   }
 }

@@ -1,40 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:friends_admin/constence/MyColor.dart';
-// import 'package:get/get_core/src/get_main.dart'; // غير مستخدم هنا مباشرة
-// import 'package:get/get_navigation/src/extension_navigation.dart';
-
+import '../../Controller/NotificationController.dart'; // تأكد من المسار
 import '../widget/NotificationItem.dart';
-// import 'RequestDetailsScreen.dart';
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // تحديث البيانات لتشمل النوع ورقم الهاتف
-    final List<Map<String, String>> requests = [
-      {
-        'name': 'أحمد',
-        'desc': 'طلب صيانة مكيف مركزي في الطابق الثاني',
-        'location': 'الرياض، حي النرجس',
-        'type': 'special', // نوع الطلب: خاص
-        'phone': '0500000000' // رقم الهاتف (لن يظهر لأن النوع خاص)
-      },
-      {
-        'name': 'سارة',
-        'desc': 'تصميم داخلي مستعجل للمكتب',
-        'location': 'جدة، حي الروضة',
-        'type': 'direct', // نوع الطلب: مباشر
-        'phone': '0551234567' // سيظهر هذا الرقم
-      },
-      {
-        'name': 'شركة النور',
-        'desc': 'طلب توريد مواد بناء للموقع الجديد',
-        'location': 'الدمام، المنطقة الصناعية',
-        'type': 'direct', // نوع الطلب: مباشر
-        'phone': '0569876543' // سيظهر هذا الرقم
-      },
-    ];
+    // حقن الكنترولر
+    final NotificationController controller = Get.put(NotificationController());
 
     return Scaffold(
       appBar: AppBar(
@@ -45,37 +21,57 @@ class NotificationScreen extends StatelessWidget {
             bottomRight: Radius.circular(20),
           ),
         ),
-        title: const Text("الإشعارات", style: TextStyle(color: Colors.white)),
+        title: const Text("طلبات الخدمات", style: TextStyle(color: Colors.white)),
         backgroundColor: MyColor.primaryBlue,
+        actions: [
+          // زر تحديث القائمة
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () => controller.fetchRequests(),
+          )
+        ],
       ),
-      body: requests.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.notifications, size: 100, color: MyColor.primaryBlue),
-            const SizedBox(height: 20),
-            const Text(
-              "لا توجد إشعارات جديدة حالياً",
-              style: TextStyle(fontSize: 20),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return Center(child: CircularProgressIndicator(color: MyColor.primaryBlue));
+        }
+
+        if (controller.requestList.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.notifications_off_outlined, size: 100, color: MyColor.secondaryGrey),
+                const SizedBox(height: 20),
+                const Text(
+                  "لا توجد طلبات جديدة حالياً",
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              ],
             ),
-          ],
-        ),
-      )
-          : ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        itemCount: requests.length,
-        itemBuilder: (context, index) {
-          return NotificationItem(
-            context,
-            requests[index]['name']!,
-            requests[index]['desc']!,
-            requests[index]['location']!,
-            requests[index]['type']!,  // تمرير النوع
-            requests[index]['phone']!, // تمرير الهاتف
           );
-        },
-      ),
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          itemCount: controller.requestList.length,
+          // داخل ListView.builder في ملف notificationScreen.dart
+itemBuilder: (context, index) {
+  final request = controller.requestList[index];
+  
+  return NotificationItem(
+    context,
+    request.userName,
+    request.description ?? "طلب جديد",
+    request.address ?? "لا يوجد عنوان",
+    request.serviceType,
+    request.phone ?? "لا يوجد رقم",
+    request.profession ?? "غير محدد",
+    images: request.images, // الصور القادمة من الكنترولر (روابط كاملة)
+  );
+},
+        );
+      }),
     );
   }
 }

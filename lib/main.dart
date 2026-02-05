@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_navigation/get_navigation.dart';
-
-import 'View/pages/HomeScreen.dart';
-
-
+import 'package:get/get.dart';
+import 'View/pages/SplashPage.dart'; // استدعاء صفحة السبلاش الجديدة
 
 void main() {
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -16,7 +14,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       locale: const Locale('ar'),
       debugShowCheckedModeBanner: false,
-      home:HomeScreen(),
+      // التغيير هنا: البداية من SplashPage لفحص التوكن
+      home: const SplashPage(),
     );
   }
 }

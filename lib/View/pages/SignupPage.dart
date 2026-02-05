@@ -46,6 +46,8 @@ class Signuppage extends StatelessWidget {
                       const SizedBox(height: 15),
                       _buildField(controller.passwordController, "كلمة السر", Icons.lock_open, isPass: true),
                       const SizedBox(height: 15),
+                      _buildField(controller.confirmPasswordController, "تأكيد كلمة السر", Icons.lock_open, isPass: true),
+                      const SizedBox(height: 15),
 
                       // حقول الموقع بتصميم أنيق
                       GetBuilder<Signupcontroller>(builder: (controller) {
@@ -59,12 +61,23 @@ class Signuppage extends StatelessWidget {
                       }),
 
                       const SizedBox(height: 35),
-                      _buildBtn("إنشاء الحساب", () {
-                        if (_formKey.currentState!.validate()) Get.offAll(LoginPage());
-                      }),
-                      TextButton(
-                        onPressed: () => Get.offAll(LoginPage()),
-                        child: Text("لديك حساب بالفعل؟ سجل دخولك", style: TextStyle(color: MyColor.primaryBlue)),
+                     GetBuilder<Signupcontroller>(
+  builder: (controller) => controller.isLoading 
+    ? CircularProgressIndicator() 
+    : _buildBtn("إنشاء الحساب", () {
+        controller.signup();
+      }),
+),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(" لديك حساب بالفعل ؟ ", style: TextStyle(color: Colors.grey[600])),
+                          TextButton(
+                            onPressed: () => Get.offAll(LoginPage()),
+                            child: Text(" سجل دخولك", style: TextStyle(color: MyColor.primaryBlue,fontWeight: FontWeight.bold)),
+                          )
+                        ],
                       )
                     ],
                   ),
