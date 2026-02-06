@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import '../services/token_service.dart'; // استدعاء ملف التوكن
 
 class DioClient {
-  final String baseUrl = "http://192.168.10.65:8000/api";
+  final String baseUrl = "http://192.168.1.103:8000/api";
   final TokenService _tokenService = TokenService(); // تعريف خدمة التوكن
   late Dio _dio;
 

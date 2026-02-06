@@ -3,16 +3,11 @@ class AdModel {
   final String? title;
   final String? description;
   final String? image;
-  final String? governorate;
-  final String? city; // أضفت المدينة لأنها موجودة في الباك إند
-
   AdModel({
     required this.id,
     this.title,
     this.description,
     this.image,
-    this.governorate,
-    this.city,
   });
 
   factory AdModel.fromJson(Map<String, dynamic> json) {
@@ -21,8 +16,6 @@ class AdModel {
       title: json['title'],
       description: json['description'],
       image: json['image'],
-      governorate: json['governorate'],
-      city: json['city'],
     );
   }
 
@@ -33,7 +26,7 @@ class AdModel {
     }
     
     // ملاحظة: تأكد أن الـ IP هو نفس الـ IP الموجود في DioClient
-    const String baseUrl = "http://192.168.0.107:8000"; 
+    const String baseUrl = "http://192.168.1.103:8000";
     return "$baseUrl/storage/$image";
   }
 }

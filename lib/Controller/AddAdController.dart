@@ -8,8 +8,7 @@ import '../core/api/dio_client.dart'; // تأكد من استيراد كلاس D
 class AddAdController extends GetxController {
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
-  final cityController = TextEditingController(); // لإرسال المدينة المطلوبة
-  
+  String? selectedGovernorate;  
   File? selectedImage;
   bool isLoading = false;
   final DioClient _dioClient = DioClient();
@@ -25,7 +24,7 @@ class AddAdController extends GetxController {
 
   // إرسال الإعلان للباك إند
   Future<void> uploadAd() async {
-    if (titleController.text.isEmpty || descriptionController.text.isEmpty || cityController.text.isEmpty) {
+    if (titleController.text.isEmpty || descriptionController.text.isEmpty || selectedGovernorate == null) {
       Get.snackbar("خطأ", "يرجى ملء كافة الحقول");
       return;
     }
@@ -38,7 +37,7 @@ class AddAdController extends GetxController {
       dio.FormData formData = dio.FormData.fromMap({
         "title": titleController.text,
         "description": descriptionController.text,
-        "city": cityController.text,
+        "governorate": selectedGovernorate,
         "active": 1, // تفعيل الإعلان تلقائياً
         if (selectedImage != null)
           "image": await dio.MultipartFile.fromFile(
@@ -64,7 +63,7 @@ class AddAdController extends GetxController {
   void _clearFields() {
     titleController.clear();
     descriptionController.clear();
-    cityController.clear();
+    selectedGovernorate = null;
     selectedImage = null;
     update();
   }

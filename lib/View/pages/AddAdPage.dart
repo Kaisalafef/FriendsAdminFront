@@ -5,6 +5,7 @@ import '../../constence/MyColor.dart';
 
 // قائمة محافظات العراق
 final List<String> iraqCities = [
+  "عام",
   "بغداد",
   "البصرة",
   "نينوى",
@@ -92,9 +93,7 @@ class AddAdPage extends StatelessWidget {
 
               // اختيار المحافظة (Dropdown)
               DropdownButtonFormField<String>(
-                value: controller.cityController.text.isEmpty
-                    ? null
-                    : controller.cityController.text,
+                value: controller.selectedGovernorate,
                 decoration: InputDecoration(
                   hintText: "اختر المحافظة",
                   prefixIcon: Icon(
@@ -116,7 +115,8 @@ class AddAdPage extends StatelessWidget {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  controller.cityController.text = value ?? "";
+                  controller.selectedGovernorate = value;
+                  controller.update();
                 },
               ),
 

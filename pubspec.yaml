@@ -41,6 +41,8 @@ dependencies:
   dio: ^5.9.1
   shared_preferences: ^2.2.0
   image_picker: ^1.0.4
+  url_launcher: ^6.3.2
+#  url_launcher: ^6.3.2
 
 dependency_overrides:
   flutter_plugin_android_lifecycle: ^2.0.22

@@ -55,6 +55,15 @@ android {
         }
     }
 }
+dependencies {
+    // هذا السطر يمنع أي مكتبة أخرى من سحب الإصدار 1.9.0
+    constraints {
+        implementation("androidx.browser:browser:1.8.0") {
+            force = true
+            because("إصدار 1.9.0 يتطلب Gradle Plugin أحدث من المتوفر حالياً")
+        }
+    }
+}
 
 flutter {
     source '../..'

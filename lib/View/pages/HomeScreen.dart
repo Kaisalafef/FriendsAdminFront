@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:friends_admin/View/pages/Adpage.dart';
+import 'package:friends_admin/View/pages/EventPage.dart';
 import '../../constence/MyColor.dart';
 import 'notificationScreen.dart';
 import 'SettingScreen.dart';
@@ -16,8 +17,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // 1. تحديث قائمة الصفحات لتشمل AdPage في المنتصف
   final List<Widget> _pages = [
     const NotificationScreen(), // Index 0
-          AdPage(),          // Index 1 (الصفحة الجديدة)
-    const SettingScreen(),      // Index 2
+          AdPage(),
+    EventPage(),         // Index 1 (الصفحة الجديدة)
+    const SettingScreen(), // Index 2
+
   ];
 
   void _onItemTapped(int index) {
@@ -63,6 +66,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.add_photo_alternate_outlined), // أيقونة الإعلانات
                 activeIcon: Icon(Icons.add_photo_alternate),
                 label: 'إعلان',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.event_outlined),
+                activeIcon: Icon(Icons.event),
+                label: 'أحداث',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.settings_outlined),

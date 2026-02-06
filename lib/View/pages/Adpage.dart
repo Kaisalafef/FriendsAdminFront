@@ -62,13 +62,13 @@ class AdPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // زر التعديل
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            // سنقوم بربط التعديل لاحقاً بنفس صفحة الإضافة
-                            Get.snackbar("تنبيه", "ميزة التعديل قيد التطوير");
-                          },
-                        ),
+                        // IconButton(
+                        //   icon: const Icon(Icons.edit, color: Colors.blue),
+                        //   onPressed: () {
+                        //     // سنقوم بربط التعديل لاحقاً بنفس صفحة الإضافة
+                        //     Get.snackbar("تنبيه", "ميزة التعديل قيد التطوير");
+                        //   },
+                        // ),
                         // زر الحذف
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),

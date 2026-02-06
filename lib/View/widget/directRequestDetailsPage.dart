@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:friends_admin/View/pages/HomeScreen.dart';
 import 'package:friends_admin/constence/MyColor.dart';
-import 'package:get/get.dart'; // تم استخدام get للإيجاز بدلاً من المسارات الطويلة
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DirectRequestDetailsPage extends StatelessWidget {
   final String userName;
   final String location;
   final String phone;
   final String note;
+  final String profession;
 
   const DirectRequestDetailsPage({
     super.key,
@@ -15,204 +16,179 @@ class DirectRequestDetailsPage extends StatelessWidget {
     required this.location,
     required this.phone,
     required this.note,
+    required this.profession,
   });
+
+  // دالة فتح الخريطة
+  Future<void> openMap(String location) async {
+    final String googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(location)}";
+    final Uri url = Uri.parse(googleMapsUrl);
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar("خطأ", "لا يمكن فتح تطبيق الخرائط حالياً", 
+        snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
+  // دالة الاتصال الهاتفي
+  Future<void> makeCall(String phoneNumber) async {
+    final Uri url = Uri.parse("tel:$phoneNumber");
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      Get.snackbar("خطأ", "لا يمكن إجراء المكالمة", 
+        snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50], // خلفية فاتحة جداً لإبراز البطاقة
+      backgroundColor: Colors.grey[50], // خلفية فاتحة لإبراز البطاقات
       appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: Text(
-          "تفاصيل طلب $userName",
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: Text("تفاصيل طلب $userName", 
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: MyColor.primaryBlue,
         centerTitle: true,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
-          children: [
-            // --- بطاقة التفاصيل ---
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _buildDetailItem(
-                    title: "اسم صاحب الطلب",
-                    value: userName,
-                    icon: Icon(Icons.person, color: MyColor.primaryBlue),
-                  ),
-                  _buildDetailItem(
-                    title: "الموقع",
-                    value: location,
-                    icon: Icon(Icons.location_on, color: Colors.red[600]),
-                    widget: TextButton.icon(
-                      onPressed: () {
-                        Get.to(HomeScreen());
-                      },
-                      label: const Text(
-                        "اعرض الخريطة",
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                      icon: Icon(Icons.map, color: MyColor.primaryBlue, size: 18),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        alignment: Alignment.centerRight,
-                      ),
-                    ),
-                  ),
-                  _buildDetailItem(
-                    title: "رقم الهاتف",
-                    value: phone,
-                    icon: Icon(Icons.phone, color: MyColor.primaryBlue),
-                  ),
-                  // إزالة الخط الفاصل من آخر عنصر لجمالية أكثر
-                  _buildDetailItem(
-                    title: "الملاحظة",
-                    value: note,
-                    icon: Icon(Icons.note, color: MyColor.primaryBlue),
-                    isLast: true,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // --- الأزرار ---
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    label: "رفض",
-                    color: Colors.blue, // حافظت على اللون كما طلبت
-                    onPressed: () {
-                      // كود الرفض
-                    },
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: _buildActionButton(
-                    label: "موافقة",
-                    color: Colors.blue, // حافظت على اللون كما طلبت
-                    onPressed: () {
-                      // كود الموافقة
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- ويدجت التفاصيل المحسنة ---
-  Widget _buildDetailItem({
-    required String title,
-    required String value,
-    Icon? icon,
-    Widget? widget,
-    bool isLast = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 10),
-        // العنوان
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        // القيمة والأيقونة
-        Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (icon != null) ...[
-              icon,
-              const SizedBox(width: 10),
-            ],
-            Expanded(
-              child: Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                  height: 1.4,
+            // بطاقة المعلومات الأساسية (نفس ستايل الملف الآخر)
+            _buildModernCard([
+              _detailRow("الفني", profession, Icons.work),
+              _detailRow("اسم العميل", userName, Icons.person),
+              
+              _detailRow(
+                "رقم الهاتف", 
+                phone, 
+                Icons.phone,
+                extraWidget: TextButton.icon(
+                  onPressed: () => makeCall(phone),
+                  icon: const Icon(Icons.call, color: Colors.green, size: 18),
+                  label: const Text("اتصال الآن", 
+                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                 ),
               ),
-            ),
+
+              _detailRow(
+                "الموقع", 
+                location, 
+                Icons.location_on,
+                extraWidget: TextButton.icon(
+                  onPressed: () => openMap(location),
+                  icon: Icon(Icons.map, color: MyColor.primaryBlue, size: 18),
+                  label: const Text("عرض الخريطة"),
+                ),
+              ),
+            ]),
+
+            const SizedBox(height: 20),
+            
+            // قسم ملاحظات الطلب
+            _buildSectionTitle("وصف المشكلة"),
+            _buildModernCard([
+              Text(
+                note.isEmpty ? "لا توجد ملاحظات إضافية" : note, 
+                style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.black87)
+              ),
+            ]),
+
+            const SizedBox(height: 30),
+            
+            // أزرار التحكم في الأسفل
+            Row(
+              children: [
+                Expanded(child: _actionBtn("قبول الطلب", Colors.green, Colors.white, () {
+                  Get.snackbar("تم", "تم قبول الطلب بنجاح");
+                })),
+                const SizedBox(width: 10),
+                Expanded(child: _actionBtn("رفض", Colors.redAccent, Colors.white, () {
+                  Get.back();
+                })),
+              ],
+            )
           ],
         ),
-
-        // زر إضافي (مثل الخريطة)
-        if (widget != null) ...[
-          const SizedBox(height: 5),
-          Align(alignment: Alignment.centerLeft, child: widget),
-        ],
-
-        const SizedBox(height: 10),
-
-        // الخط الفاصل
-        if (!isLast)
-          Divider(
-            color: MyColor.primaryBlue.withOpacity(0.3),
-            thickness: 1,
-          ),
-      ],
+      ),
     );
   }
 
-  // --- ويدجت الزر الموحد ---
-  Widget _buildActionButton({
-    required String label,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
+  // ويدجت عنوان القسم
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+      child: Text(title, 
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: MyColor.primaryBlue)),
+    );
+  }
+
+  // ويدجت البطاقة العصرية
+  Widget _buildModernCard(List<Widget> children) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05), 
+            blurRadius: 15, 
+            offset: const Offset(0, 5)
+          )
+        ],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+    );
+  }
+
+  // ويدجت صف التفاصيل
+  Widget _detailRow(String title, String val, IconData icon, {Widget? extraWidget}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(icon, color: MyColor.primaryBlue, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(val, 
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black)),
+              ),
+              if (extraWidget != null) extraWidget,
+            ],
+          ),
+          const Divider(height: 20, thickness: 0.5),
+        ],
+      ),
+    );
+  }
+
+  // ويدجت الزر
+  Widget _actionBtn(String label, Color bg, Color txt, VoidCallback tap) {
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: tap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        elevation: 5,
-        shadowColor: Colors.black.withOpacity(0.3),
+        backgroundColor: bg,
         padding: const EdgeInsets.symmetric(vertical: 15),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 2,
       ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
+      child: Text(label, style: TextStyle(color: txt, fontWeight: FontWeight.bold, fontSize: 16)),
     );
   }
 }
