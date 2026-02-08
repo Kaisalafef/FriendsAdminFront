@@ -10,7 +10,7 @@ class AdPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // استدعاء الكنترولر وتحديث البيانات عند فتح الصفحة
-    final AdsController controller = Get.put(AdsController());
+    final AdsController controller = Get.find<AdsController>();
     controller.fetchAds(); 
 
     return Scaffold(

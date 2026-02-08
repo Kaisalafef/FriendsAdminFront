@@ -8,7 +8,7 @@ class ViewGovEmployee extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(AdminController());
+    final controller = Get.find<AdminController>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.fetchAllEmployees();
@@ -90,6 +90,7 @@ class ViewGovEmployee extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(Map emp) {
+    final AdminController controller = Get.find();
     Get.defaultDialog(
       title: "تأكيد الحذف",
       middleText: "هل أنت متأكد من حذف حساب ${emp['name']}؟",
@@ -99,7 +100,7 @@ class ViewGovEmployee extends StatelessWidget {
       buttonColor: Colors.red,
       onConfirm: () {
         // استدعاء دالة الحذف من الكنترولر وتمرير ID الموظف
-        // controller.deleteEmployee(emp['id']);
+        controller.deleteEmployee(emp['id']);
         Get.back();
       },
     );

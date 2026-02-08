@@ -33,7 +33,7 @@ class AdModel {
     }
     
     // ملاحظة: تأكد أن الـ IP هو نفس الـ IP الموجود في DioClient
-    const String baseUrl = "http://192.168.10.81:8000";
+    const String baseUrl = "http://192.168.10.80:8000";
     return "$baseUrl/storage/$image";
   }
 }

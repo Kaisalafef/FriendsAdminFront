@@ -8,7 +8,7 @@ class CreateCityAdminScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(AdminController());
+    final controller = Get.find<AdminController>();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -47,7 +47,7 @@ class CreateCityAdminScreen extends StatelessWidget {
                     // ربط الزر بدالة حفظ أدمن المدينة
                     Obx(() => controller.isLoading.value
                         ? const CircularProgressIndicator()
-                        : _submitBtn("حفظ بيانات المشرف", controller.saveCityAdmin)
+                        : _submitBtn("حفظ بيانات المشرف", () => controller.saveCityAdmin(Get.find<AdminController>().selectedGovernorate.value ?? ""))
                     ),
                   ],
                 ),

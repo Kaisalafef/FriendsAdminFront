@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../core/api/dio_client.dart';
 import '../Model/HomeServiceModel.dart';
@@ -6,6 +8,10 @@ class NotificationController extends GetxController {
   var isLoading = true.obs;
   var requestList = <HomeServiceModel>[].obs;
   final DioClient _dioClient = DioClient();
+
+  // جلب الطلبات قيد الانتظار فقط للعرض في شاشة الإشعارات
+  List<HomeServiceModel> get pendingRequests =>
+      requestList.where((req) => req.status == 'pending').toList();
 
   @override
   void onInit() {
@@ -20,26 +26,26 @@ class NotificationController extends GetxController {
 
       if (response.statusCode == 200) {
         var data = response.data['data'] as List;
-        
+
         requestList.value = data.map((e) {
-          // جلب الصور وتحويلها لروابط كاملة
           List<String> imageUrls = [];
           if (e['images'] != null) {
             imageUrls = (e['images'] as List).map((img) {
-              // تأكد من صحة الـ IP الخاص بك هنا
-              return "http://192.168.0.107:8000/storage/${img['image_path']}";
+              return "http://192.168.10.80:8000/storage/${img['image_path']}";
             }).toList();
           }
 
           return HomeServiceModel(
             id: e['id'],
+            userId: e['user_id'] ?? 0,
             userName: e['user']?['name'] ?? "عميل",
             description: e['description'],
             address: e['address'],
             serviceType: e['service_type'],
-            phone: e['phone'] ?? "لا يوجد رقم", // جلب الهاتف
-            profession: e['profession'] ?? "غير محدد", // تأكد من إضافة هذا السطر
-            images: imageUrls, // قائمة الروابط الكاملة
+            phone: e['phone'] ?? "لا يوجد رقم",
+            profession: e['profession'] ?? "غير محدد",
+            status: e['status'] ?? 'pending',
+            images: imageUrls,
           );
         }).toList();
       }
@@ -47,6 +53,40 @@ class NotificationController extends GetxController {
       print("Error fetching notifications: $e");
     } finally {
       isLoading(false);
+    }
+  }
+
+  Future<bool> updateRequestStatus(int requestId, String newStatus) async {
+    try {
+      var response = await _dioClient.put(
+        '/home-services/$requestId/status',
+        data: {'status': newStatus},
+      );
+
+      if (response.statusCode == 200) {
+        await fetchRequests();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      Get.snackbar("خطأ", "فشل تحديث الحالة: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      return false;
+    }
+  }
+
+  Future<void> sendNotification({
+    required int userId,
+    required String title,
+    required String message,
+  }) async {
+    try {
+      await _dioClient.post('/notifications', data: {
+        'user_id': userId,
+        'title': title,
+        'message': message,
+      });
+    } catch (e) {
+      print("Error sending notification: $e");
     }
   }
 }

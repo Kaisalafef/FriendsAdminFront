@@ -2,54 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:friends_admin/constence/MyColor.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../Controller/NotificationController.dart';
 
 class DirectRequestDetailsPage extends StatelessWidget {
+  final int requestId; // <--- معرف الخدمة
+  final int userId;
   final String userName;
   final String location;
   final String phone;
   final String note;
   final String profession;
+  final String currentStatus; // <--- الحالة
 
-  const DirectRequestDetailsPage({
+  DirectRequestDetailsPage({
     super.key,
+    required this.requestId,
+    required this.userId,
     required this.userName,
     required this.location,
     required this.phone,
     required this.note,
     required this.profession,
+    required this.currentStatus,
   });
 
-  // دالة فتح الخريطة
+  final NotificationController controller = Get.find<NotificationController>();
+  final TextEditingController noteController = TextEditingController();
+
   Future<void> openMap(String location) async {
     final String googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(location)}";
     final Uri url = Uri.parse(googleMapsUrl);
-
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar("خطأ", "لا يمكن فتح تطبيق الخرائط حالياً", 
-        snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
-  // دالة الاتصال الهاتفي
   Future<void> makeCall(String phoneNumber) async {
     final Uri url = Uri.parse("tel:$phoneNumber");
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
-    } else {
-      Get.snackbar("خطأ", "لا يمكن إجراء المكالمة", 
-        snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isPending = currentStatus == 'pending';
+
     return Scaffold(
-      backgroundColor: Colors.grey[50], // خلفية فاتحة لإبراز البطاقات
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text("تفاصيل طلب $userName", 
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text("تفاصيل طلب $userName", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: MyColor.primaryBlue,
         centerTitle: true,
         elevation: 0,
@@ -63,27 +65,36 @@ class DirectRequestDetailsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // بطاقة المعلومات الأساسية (نفس ستايل الملف الآخر)
-            _buildModernCard([
-              _detailRow("الفني", profession, Icons.work),
-              _detailRow("اسم العميل", userName, Icons.person),
-              
-              _detailRow(
-                "رقم الهاتف", 
-                phone, 
-                Icons.phone,
-                extraWidget: TextButton.icon(
-                  onPressed: () => makeCall(phone),
-                  icon: const Icon(Icons.call, color: Colors.green, size: 18),
-                  label: const Text("اتصال الآن", 
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            // شريط الحالة
+            if (!isPending)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: currentStatus == 'accepted' ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: currentStatus == 'accepted' ? Colors.green : Colors.red),
+                ),
+                child: Text(
+                  currentStatus == 'accepted' ? "الطلب مقبول" : "الطلب مرفوض",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: currentStatus == 'accepted' ? Colors.green : Colors.red, fontWeight: FontWeight.bold),
                 ),
               ),
 
-              _detailRow(
-                "الموقع", 
-                location, 
-                Icons.location_on,
+            // البطاقة
+            _buildModernCard([
+              _detailRow("الفني", profession, Icons.work),
+              _detailRow("اسم العميل", userName, Icons.person),
+              _detailRow("رقم الهاتف", phone, Icons.phone,
+                extraWidget: TextButton.icon(
+                  onPressed: () => makeCall(phone),
+                  icon: const Icon(Icons.call, color: Colors.green, size: 18),
+                  label: const Text("اتصال الآن", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              _detailRow("الموقع", location, Icons.location_on,
                 extraWidget: TextButton.icon(
                   onPressed: () => openMap(location),
                   icon: Icon(Icons.map, color: MyColor.primaryBlue, size: 18),
@@ -93,46 +104,107 @@ class DirectRequestDetailsPage extends StatelessWidget {
             ]),
 
             const SizedBox(height: 20),
-            
-            // قسم ملاحظات الطلب
+
             _buildSectionTitle("وصف المشكلة"),
             _buildModernCard([
               Text(
-                note.isEmpty ? "لا توجد ملاحظات إضافية" : note, 
-                style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.black87)
+                  note.isEmpty ? "لا توجد ملاحظات إضافية" : note,
+                  style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.black87)
               ),
             ]),
 
             const SizedBox(height: 30),
-            
-            // أزرار التحكم في الأسفل
-            Row(
-              children: [
-                Expanded(child: _actionBtn("قبول الطلب", Colors.green, Colors.white, () {
-                  Get.snackbar("تم", "تم قبول الطلب بنجاح");
-                })),
-                const SizedBox(width: 10),
-                Expanded(child: _actionBtn("رفض", Colors.redAccent, Colors.white, () {
-                  Get.back();
-                })),
-              ],
-            )
+
+            // الأزرار
+            if (isPending)
+              Row(
+                children: [
+                  Expanded(child: _actionBtn("قبول الطلب", Colors.green, Colors.white, () {
+                    _showActionDialog(context, isAccept: true);
+                  })),
+                  const SizedBox(width: 10),
+                  Expanded(child: _actionBtn("رفض", Colors.redAccent, Colors.white, () {
+                    _showActionDialog(context, isAccept: false);
+                  })),
+                ],
+              )
           ],
         ),
       ),
     );
   }
 
-  // ويدجت عنوان القسم
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-      child: Text(title, 
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: MyColor.primaryBlue)),
+  void _showActionDialog(BuildContext context, {required bool isAccept}) {
+    noteController.clear();
+    String title = isAccept ? "قبول الطلب" : "رفض الطلب";
+    String hint = isAccept ? "حدد موعد وصول العمال" : "سبب الرفض";
+
+    Get.defaultDialog(
+      title: title,
+      titleStyle: TextStyle(color: isAccept ? Colors.green : Colors.red, fontWeight: FontWeight.bold),
+      content: Column(
+        children: [
+          Text(isAccept
+              ? "سيتم تغيير الحالة وإبلاغ العميل."
+              : "سيتم رفض الطلب وإبلاغ العميل.", textAlign: TextAlign.center),
+          const SizedBox(height: 15),
+          TextField(
+            controller: noteController,
+            decoration: InputDecoration(
+              hintText: hint,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              filled: true,
+              fillColor: Colors.grey[100],
+            ),
+            maxLines: 3,
+          ),
+        ],
+      ),
+      textConfirm: "تأكيد",
+      textCancel: "إلغاء",
+      confirmTextColor: Colors.white,
+      buttonColor: isAccept ? Colors.green : Colors.red,
+      onConfirm: () async {
+        if (noteController.text.isEmpty) {
+          Get.snackbar("تنبيه", "الرجاء ملء الحقل المطلوب", backgroundColor: Colors.orange);
+          return;
+        }
+
+        Get.back(); // إغلاق النافذة
+        Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
+
+        // 1. تحديث الحالة
+        bool success = await controller.updateRequestStatus(requestId, isAccept ? 'accepted' : 'rejected');
+
+        if (success) {
+          // 2. إرسال التفاصيل
+          await controller.sendNotification(
+            userId: userId,
+            title: isAccept ? "تم قبول طلبك ✅" : "تم رفض الطلب ❌",
+            message: isAccept
+                ? "وافق المسؤول على الطلب. موعد الوصول: ${noteController.text}"
+                : "عذراً، تم رفض الطلب. السبب: ${noteController.text}",
+          );
+
+          Get.back(); // إغلاق التحميل
+          Get.back(); // العودة للخلف
+          Get.snackbar("نجاح", "تمت العملية بنجاح", backgroundColor: Colors.green, colorText: Colors.white);
+        } else {
+          Get.back(); // إغلاق التحميل
+        }
+      },
     );
   }
 
-  // ويدجت البطاقة العصرية
+  // ... (نفس الدوال المساعدة للواجهة _buildSectionTitle, _buildModernCard, _detailRow, _actionBtn)
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+      child: Text(title,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: MyColor.primaryBlue)),
+    );
+  }
+
   Widget _buildModernCard(List<Widget> children) {
     return Container(
       width: double.infinity,
@@ -142,9 +214,9 @@ class DirectRequestDetailsPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05), 
-            blurRadius: 15, 
-            offset: const Offset(0, 5)
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 5)
           )
         ],
       ),
@@ -152,7 +224,6 @@ class DirectRequestDetailsPage extends StatelessWidget {
     );
   }
 
-  // ويدجت صف التفاصيل
   Widget _detailRow(String title, String val, IconData icon, {Widget? extraWidget}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -166,8 +237,8 @@ class DirectRequestDetailsPage extends StatelessWidget {
               Icon(icon, color: MyColor.primaryBlue, size: 20),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(val, 
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black)),
+                child: Text(val,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black)),
               ),
               if (extraWidget != null) extraWidget,
             ],
@@ -178,7 +249,6 @@ class DirectRequestDetailsPage extends StatelessWidget {
     );
   }
 
-  // ويدجت الزر
   Widget _actionBtn(String label, Color bg, Color txt, VoidCallback tap) {
     return ElevatedButton(
       onPressed: tap,

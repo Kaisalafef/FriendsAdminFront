@@ -15,8 +15,8 @@ class SettingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SettingsController());
-    final logoutController = Get.put(LogoutController());
+    final controller = Get.find<SettingsController>();
+    final logoutController = Get.find<LogoutController>();
 
     return Scaffold(
       backgroundColor: Colors.grey[50],

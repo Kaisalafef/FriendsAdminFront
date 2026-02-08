@@ -84,7 +84,7 @@ class AdminController extends GetxController {
       }
     } catch (e) {
       print("Create Admin Error: $e");
-      Get.snackbar("خطأ", "فشل إضافة المشرف، ربما الهاتف مكرر", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("خطأ", "فشل إضافة المشرف، ربما الهاتف مكرر أو انت خارج نطاق محافظتك", backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }
@@ -96,7 +96,17 @@ class AdminController extends GetxController {
   }
 
   // 2. حفظ أدمن المدينة
-  void saveCityAdmin() {
+  void saveCityAdmin(String CurrentUserGov) {
+    if (selectedGovernorate.value != CurrentUserGov) {
+      Get.snackbar(
+        "تنبيه", 
+        "لا يمكنك إضافة موظف في محافظة أخرى. يرجى اختيار محافظتك ($CurrentUserGov)",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return; // إيقاف العملية ومنع الإرسال
+    }
     _submitAdmin(role: 'city_admin');
   }
 
@@ -137,4 +147,28 @@ class AdminController extends GetxController {
     selectedGovernorate.value = null;
     selectedCity.value = null;
   }
+  // داخل كلاس AdminController
+
+Future<void> deleteEmployee(int id) async {
+  try {
+    isLoading.value = true;
+    
+    // الاتصال بالباك إند
+    final response = await _dioClient.delete('/delete-admin/$id');
+
+    if (response.statusCode == 200) {
+      // حذف العنصر من القائمة المحلية لتحديث الواجهة فوراً
+      employeesList.removeWhere((emp) => emp['id'] == id);
+      
+      Get.snackbar("نجاح", "تم حذف الموظف بنجاح", 
+          backgroundColor: Colors.green, colorText: Colors.white);
+    }
+  } catch (e) {
+    print("Delete Error: $e");
+    Get.snackbar("خطأ", "فشل عملية الحذف", 
+        backgroundColor: Colors.red, colorText: Colors.white);
+  } finally {
+    isLoading.value = false;
+  }
+}
 }

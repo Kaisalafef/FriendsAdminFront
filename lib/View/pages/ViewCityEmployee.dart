@@ -8,7 +8,7 @@ class ViewCityEmployee extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(AdminController());
+    final controller = Get.find<AdminController>();
 
     // جلب البيانات عند فتح الصفحة
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,17 +87,6 @@ class ViewCityEmployee extends StatelessWidget {
   ),
   const SizedBox(height: 20),
 
-  // خيار التعديل
-  ListTile(
-  leading: const Icon(Icons.edit, color: Colors.blue),
-  title: const Text("تعديل بيانات الموقع"),
-  onTap: () {
-  Get.back(); // إغلاق الـ Bottom Sheet
-  // هنا تستدعي الدايلوج الذي صممناه سابقاً لتعديل الموقع
-  // controller.showLocationUpdateDialog(emp['id']);
-  },
-  ),
-
   // خيار الحذف
   ListTile(
   leading: const Icon(Icons.delete_forever, color: Colors.red),
@@ -115,6 +104,7 @@ class ViewCityEmployee extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(Map emp) {
+    final AdminController controller = Get.find();
   Get.defaultDialog(
   title: "تأكيد الحذف",
   middleText: "هل أنت متأكد من حذف حساب ${emp['name']}؟",
@@ -124,7 +114,7 @@ class ViewCityEmployee extends StatelessWidget {
   buttonColor: Colors.red,
   onConfirm: () {
   // استدعاء دالة الحذف من الكنترولر وتمرير ID الموظف
-  // controller.deleteEmployee(emp['id']);
+  controller.deleteEmployee(emp['id']);
   Get.back();
   },
   );
