@@ -7,7 +7,7 @@ class AddEventPage extends StatelessWidget {
 
   final titleController = TextEditingController();
   final descController = TextEditingController();
-  final AddEventController controller = Get.find<AddEventController>();
+  final AddEventController controller = Get.put(AddEventController());
 
   @override
   Widget build(BuildContext context) {

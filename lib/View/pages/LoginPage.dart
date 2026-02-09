@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
 class LoginPage extends StatelessWidget {
-  final LoginController controller = Get.find<LoginController>();
+  final LoginController controller = Get.put(LoginController());
   final _formKey = GlobalKey<FormState>();
 
   @override

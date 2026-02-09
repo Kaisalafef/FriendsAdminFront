@@ -195,35 +195,40 @@ class RequestDetailsScreen extends StatelessWidget {
       textCancel: "إلغاء",
       confirmTextColor: Colors.white,
       buttonColor: isAccept ? Colors.green : Colors.red,
-      onConfirm: () async {
-        if (noteController.text.isEmpty) {
-          Get.snackbar("تنبيه", "الرجاء كتابة ملاحظة للعميل", backgroundColor: Colors.orange);
-          return;
-        }
+      // في دالة _showActionDialog داخل ملف RequestDetailsScreen.dart
 
-        Get.back(); // إغلاق الـ Dialog
-        Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false); // تحميل
+onConfirm: () async {
+  if (noteController.text.isEmpty) {
+    Get.snackbar("تنبيه", "الرجاء كتابة ملاحظة للعميل", backgroundColor: Colors.orange);
+    return;
+  }
 
-        // 1. تحديث الحالة في الداتابيز
-        bool success = await controller.updateRequestStatus(requestId, isAccept ? 'accepted' : 'rejected');
+  Get.back(); // إغلاق الـ Dialog
+  Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false); // إظهار التحميل
 
-        if (success) {
-          // 2. إرسال الإشعار بالتفاصيل الخاصة (الوقت أو السبب)
-          await controller.sendNotification(
-            userId: userId,
-            title: isAccept ? "تم قبول طلبك ✅" : "تم رفض الطلب ❌",
-            message: isAccept
-                ? "تم قبول الطلب. موعد الوصول: ${noteController.text}"
-                : "عذراً، تم رفض الطلب. السبب: ${noteController.text}",
-          );
+  // --- التعديل هنا ---
+  
+  // نقوم بتجهيز نص الرسالة الكامل
+  String fullMessage = isAccept
+      ? "تم قبول الطلب. موعد الوصول: ${noteController.text}"
+      : "عذراً، تم رفض الطلب. السبب: ${noteController.text}";
 
-          Get.back(); // إغلاق التحميل
-          Get.back(); // العودة للشاشة الرئيسية
-          Get.snackbar("تم", "تم تحديث الحالة وإرسال الإشعار", backgroundColor: Colors.green, colorText: Colors.white);
-        } else {
-          Get.back(); // إغلاق التحميل فقط
-        }
-      },
+  // نستدعي دالة التحديث فقط (وهي ستقوم بالحفظ في الداتابيز عبر الباك إند)
+  bool success = await controller.updateRequestStatus(
+      requestId, 
+      isAccept ? 'accepted' : 'rejected',
+      note: fullMessage // نرسل النص هنا
+  );
+
+  Get.back(); // إغلاق التحميل
+
+  if (success) {
+    Get.back(); // العودة للشاشة الرئيسية
+    Get.snackbar("تم", "تم تحديث الحالة وإشعار العميل بنجاح", backgroundColor: Colors.green, colorText: Colors.white);
+  } else {
+    // البقاء في الصفحة في حال الفشل
+  }
+},
     );
   }
 

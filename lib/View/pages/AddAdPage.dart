@@ -27,7 +27,7 @@ final List<String> iraqCities = [
 ];
 
 class AddAdPage extends StatelessWidget {
-  final AddAdController controller = Get.find<AddAdController>();
+  final AddAdController controller = Get.put(AddAdController());
 
   @override
   Widget build(BuildContext context) {

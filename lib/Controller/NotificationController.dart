@@ -56,23 +56,30 @@ class NotificationController extends GetxController {
     }
   }
 
-  Future<bool> updateRequestStatus(int requestId, String newStatus) async {
-    try {
-      var response = await _dioClient.put(
-        '/home-services/$requestId/status',
-        data: {'status': newStatus},
-      );
+  // في ملف NotificationController.dart
 
-      if (response.statusCode == 200) {
-        await fetchRequests();
-        return true;
-      }
-      return false;
-    } catch (e) {
-      Get.snackbar("خطأ", "فشل تحديث الحالة: $e", backgroundColor: Colors.red, colorText: Colors.white);
-      return false;
+// 1. عدل تعريف الدالة لتستقبل note (اختياري)
+Future<bool> updateRequestStatus(int requestId, String newStatus, {String? note}) async {
+  try {
+    // 2. إرسال الملاحظة مع الـ Body
+    var response = await _dioClient.put(
+      '/home-services/$requestId/status',
+      data: {
+        'status': newStatus,
+        'admin_note': note // <--- هذا هو التعديل المهم
+      },
+    );
+
+    if (response.statusCode == 200) {
+      await fetchRequests(); // تحديث القائمة
+      return true;
     }
+    return false;
+  } catch (e) {
+    Get.snackbar("خطأ", "فشل تحديث الحالة: $e", backgroundColor: Colors.red, colorText: Colors.white);
+    return false;
   }
+}
 
   Future<void> sendNotification({
     required int userId,
@@ -80,7 +87,7 @@ class NotificationController extends GetxController {
     required String message,
   }) async {
     try {
-      await _dioClient.post('/notifications', data: {
+      await _dioClient.post('/admin/notifications', data: {
         'user_id': userId,
         'title': title,
         'message': message,

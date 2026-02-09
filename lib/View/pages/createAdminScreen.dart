@@ -8,7 +8,7 @@ class CreateGovAdminScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<AdminController>();
+    final controller = Get.put(AdminController());
 
     return Scaffold(
       backgroundColor: Colors.white,

@@ -1,15 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_admin/Controller/EventController.dart';
-
+import 'package:friends_admin/Model/EventModel.dart';
+import 'package:friends_admin/View/pages/AddEventPage.dart';
 import 'package:friends_admin/constence/MyColor.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
-
-import '../../Model/EventModel.dart';
-import 'AddEventpage.dart';
 
 class EventPage extends StatelessWidget {
   const EventPage({super.key});
@@ -17,7 +15,7 @@ class EventPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // حقن الكنترولر باستخدام GetX
-    final EventsController controller = Get.find<EventsController>();
+    final EventsController controller = Get.put(EventsController());
 
     return Scaffold(
       appBar: AppBar(

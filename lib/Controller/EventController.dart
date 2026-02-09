@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:friends_admin/Model/EventModel.dart';
 import 'package:friends_admin/core/api/dio_client.dart';
 import 'package:get/get.dart';
-
-import '../Model/EventModel.dart';
 class EventsController extends GetxController {
   var isLoading = true.obs;
   var eventsList = <EventModel>[].obs;

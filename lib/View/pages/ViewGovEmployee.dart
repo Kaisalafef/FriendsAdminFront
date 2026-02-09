@@ -8,7 +8,7 @@ class ViewGovEmployee extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<AdminController>();
+    final controller = Get.put(AdminController());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.fetchAllEmployees();

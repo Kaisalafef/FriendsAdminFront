@@ -8,7 +8,9 @@ class OrderLogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<OrderLogController>();
+
+    // استخدام Get.put لضمان إنشاء الكونترولر إذا لم يكن موجوداً
+    final controller = Get.put(OrderLogController());
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -33,7 +35,8 @@ class OrderLogScreen extends StatelessWidget {
             itemCount: controller.filteredOrders.length,
             itemBuilder: (context, index) {
               final order = controller.filteredOrders[index];
-              return _buildOrderCard(order);
+              // ✅ التعديل هنا: نمرر context للدالة
+              return _buildOrderCard(context, order);
             },
           );
         }),
@@ -53,21 +56,33 @@ class OrderLogScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(order) {
-    // تحديد لون الحالة
+  // ✅ التعديل هنا: إضافة BuildContext context كـ parameter
+  Widget _buildOrderCard(BuildContext context, order) {
+    bool canDelete = true;
+    final controller = Get.find<OrderLogController>();
+
     Color statusColor;
     String statusText;
 
     switch (order.status) {
-      case 'accepted': statusColor = Colors.green; statusText = "مقبول"; break;
-      case 'rejected': statusColor = Colors.red; statusText = "مرفوض"; break;
-      default: statusColor = Colors.orange; statusText = "قيد الانتظار";
+      case 'accepted':
+        statusColor = Colors.green;
+        statusText = "مقبول";
+        break;
+      case 'rejected':
+        statusColor = Colors.red;
+        statusText = "مرفوض";
+        break;
+      default:
+        statusColor = Colors.orange;
+        statusText = "قيد الانتظار";
     }
 
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 3,
+      shadowColor: Colors.black12,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -76,30 +91,69 @@ class OrderLogScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(order.customerName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                // عرض حالة الطلب
+                Expanded(child: Text(order.customerName, style: const TextStyle(fontWeight: FontWeight.bold))),
+
+                // ✅ التحكم في ظهور زر الحذف حسب الصلاحية
+                if (canDelete)
+                  Material(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => _showDeleteConfirmation(context, controller, order.id),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(Icons.delete_outline, color: Colors.red, size: 22),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(order.serviceName, style: TextStyle(color: MyColor.primaryBlue, fontWeight: FontWeight.w600)),
+                const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: statusColor)
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: statusColor.withOpacity(0.5))
                   ),
-                  child: Text(statusText, style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                  child: Text(statusText,
+                      style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(order.serviceName, style: TextStyle(color: MyColor.primaryBlue, fontWeight: FontWeight.w500)),
-            const Divider(),
-            _infoRow(Icons.location_on, order.location, Colors.red),
-            const SizedBox(height: 5),
-            _infoRow(Icons.map, "${order.governorate} - ${order.city}", Colors.blueGrey),
-            const SizedBox(height: 5),
-            _infoRow(Icons.phone, order.phone, Colors.green),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Divider(),
+            ),
+            _infoRow(Icons.location_on_outlined, order.location, Colors.redAccent),
+            const SizedBox(height: 8),
+            _infoRow(Icons.map_outlined, "${order.governorate} - ${order.city}", Colors.blueGrey),
+            const SizedBox(height: 8),
+            _infoRow(Icons.phone_outlined, order.phone, Colors.green),
           ],
         ),
       ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, OrderLogController controller, int orderId) {
+    Get.defaultDialog(
+      title: "حذف الطلب",
+      titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      middleText: "هل أنت متأكد من رغبتك في حذف هذا الطلب نهائياً؟\nلا يمكن التراجع عن هذا الإجراء.",
+      textCancel: "إلغاء",
+      textConfirm: "حذف",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.red,
+      onConfirm: () {
+        Get.back();
+        controller.deleteOrder(orderId);
+      },
     );
   }
 

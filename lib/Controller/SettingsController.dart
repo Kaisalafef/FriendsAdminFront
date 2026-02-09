@@ -12,6 +12,7 @@ class SettingsController extends GetxController {
   var password = "********".obs; // مجرد شكل جمالي
   var userRole = "".obs; // لتخزين الصلاحية
   var isLoading = false.obs; // للتحميل
+  
 
   @override
   void onInit() {

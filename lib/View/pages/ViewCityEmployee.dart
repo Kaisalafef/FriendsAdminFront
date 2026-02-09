@@ -8,7 +8,7 @@ class ViewCityEmployee extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<AdminController>();
+    final controller = Get.put(AdminController());
 
     // جلب البيانات عند فتح الصفحة
     WidgetsBinding.instance.addPostFrameCallback((_) {
