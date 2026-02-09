@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:friends_admin/core/api/dio_client.dart'; 
 import 'package:friends_admin/core/services/token_service.dart';
 import 'package:friends_admin/View/pages/HomeScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
   final passwordController = TextEditingController();
@@ -21,7 +22,7 @@ class LoginController extends GetxController {
         'email': phoneController.text, // التعديل هنا ليتوافق مع AuthController.php
         'password': passwordController.text,
       });
-
+       // تأكد من حفظ الرتبة بهذا المفتاح
       if (response.statusCode == 200) {
         String token = response.data['token'];
         await _tokenService.saveToken(token); 

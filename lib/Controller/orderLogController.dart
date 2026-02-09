@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../View/widget/orderModel.dart';
 import '../core/api/dio_client.dart';
 
@@ -20,8 +21,10 @@ class OrderLogController extends GetxController {
 
   // دالة لجلب رتبة المستخدم من الـ Storage أو من الـ API
   void getUserRole() async {
-    // افترضنا أنك تخزن الرتبة عند تسجيل الدخول، إذا لم يكن كذلك يمكنك جلبها من الـ API
-   //  userRole.value = await storage.read('role');
+    final prefs = await SharedPreferences.getInstance();
+    // افترضنا أن اسم المفتاح هو 'role'، تأكد من مطابقته لما حفظته عند تسجيل الدخول
+    userRole.value = prefs.getString('role') ?? "";
+    print("User Role: ${userRole.value}"); // للتأكد في الكونسول
   }
   Future<void> deleteOrder(int orderId) async {
     try {

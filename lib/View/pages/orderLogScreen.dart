@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:friends_admin/constence/MyColor.dart';
 import '../../Controller/OrderLogController.dart';
+import '../../Controller/SettingsController.dart';
 
 class OrderLogScreen extends StatelessWidget {
   const OrderLogScreen({super.key});
@@ -58,8 +59,11 @@ class OrderLogScreen extends StatelessWidget {
 
   // ✅ التعديل هنا: إضافة BuildContext context كـ parameter
   Widget _buildOrderCard(BuildContext context, order) {
-    bool canDelete = true;
     final controller = Get.find<OrderLogController>();
+    final controller1 = Get.put(SettingsController());
+    // ✅ التعديل هنا: إخفاء الزر إذا كانت الرتبة city_admin
+    // الزر يظهر فقط إذا لم تكن الرتبة city_admin
+    bool canDelete = controller1.userRole.value != 'city_admin';
 
     Color statusColor;
     String statusText;
@@ -93,7 +97,7 @@ class OrderLogScreen extends StatelessWidget {
               children: [
                 Expanded(child: Text(order.customerName, style: const TextStyle(fontWeight: FontWeight.bold))),
 
-                // ✅ التحكم في ظهور زر الحذف حسب الصلاحية
+                // ✅ الشرط هنا سيمنع رسم الزر إذا كان canDelete = false
                 if (canDelete)
                   Material(
                     color: Colors.red.withOpacity(0.1),
